@@ -1,0 +1,21 @@
+
+{
+    "default": {
+        "transaction_amount": "TransactionAmt",
+        "product_code": "ProductCD",
+        "card_network": "card4",
+        "card_type": "card6"
+    },
+    "fintech_a": {
+        "amount": "TransactionAmt",
+        "product_category": "ProductCD",
+        "payment_network": "card4",
+        "payment_type": "card6"
+    },
+    "fintech_b": {
+        "value": "TransactionAmt",
+        "product_code": "ProductCD",
+        "card_brand": "card4",
+        "card_category": "card6"
+    }
+}

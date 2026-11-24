@@ -1,0 +1,8 @@
+{
+    "model": "LightGBM",
+    "threshold": 0.05,
+    "minimum_recall": 0.7,
+    "precision": 0.2513182991136542,
+    "recall": 0.7363576594345825,
+    "f1": 0.37473860309493934
+}

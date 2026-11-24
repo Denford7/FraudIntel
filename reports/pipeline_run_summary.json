@@ -1,0 +1,16 @@
+{
+  "project": "FraudIntel",
+  "started_at_utc": "2026-11-19T18:31:42.594280+00:00",
+  "finished_at_utc": "2026-11-19T18:31:42.596699+00:00",
+  "overall_status": "failed",
+  "exit_code": 1,
+  "stages_expected": 8,
+  "stages_completed": 1,
+  "stages": [
+    {
+      "stage": "Kaggle data acquisition",
+      "status": "failed",
+      "exit_code": 1
+    }
+  ]
+}

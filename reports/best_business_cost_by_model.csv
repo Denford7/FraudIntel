@@ -1,0 +1,2 @@
+model,threshold,precision,recall,f1,true_positives,false_positives,false_negatives,true_negatives,missed_fraud_cost,false_alarm_cost,total_estimated_cost,cost_per_validation_transaction
+LightGBM,0.05,0.2513182991136542,0.7363576594345825,0.37473860309493934,2240,6673,802,78866,80200.0,33365.0,113565.0,1.2820469400887324
