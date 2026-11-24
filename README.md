@@ -1,66 +1,140 @@
-\# FraudIntel — End-to-End Fraud Detection \& Monitoring Platform
+\# 🛡️ FraudIntel
+
+\### End-to-End Fraud Detection \& Intelligent Monitoring Platform
 
 
 
-FraudIntel is an end-to-end fraud detection and analytics platform designed to demonstrate practical machine learning and data engineering skills.
+<p align="center">
+
+&#x20; <strong>Turning transaction data into actionable fraud intelligence.</strong>
+
+</p>
 
 
 
-The project combines transaction data processing, machine learning, API-based predictions, simulated transaction streaming, model monitoring and an interactive dashboard.
+<p align="center">
+
+&#x20; <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python" />
+
+&#x20; <img src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi" />
+
+&#x20; <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" />
+
+&#x20; <img src="https://img.shields.io/badge/LightGBM-ML-9ACD32" />
+
+&#x20; <img src="https://img.shields.io/badge/PySpark-Data%20Engineering-E25A1C?logo=apachespark" />
+
+&#x20; <img src="https://img.shields.io/badge/MLflow-Experiment%20Tracking-0194E2" />
+
+</p>
 
 
 
-It explores how transaction data can be transformed into actionable fraud intelligence through an integrated data and machine learning workflow.
+\---
 
 
 
-\## Project Overview
+\## 🚀 Project Overview
 
 
 
-FraudIntel brings together several components of a modern fraud detection system:
+\*\*FraudIntel\*\* is an end-to-end fraud detection and analytics platform built to demonstrate practical Machine Learning Engineering and Data Engineering capabilities.
 
 
 
-1\. \*\*Data engineering:\*\* Transaction data ingestion, validation and processing.
-
-2\. \*\*Data processing:\*\* PySpark, Spark SQL, DuckDB and Parquet-based workflows.
-
-3\. \*\*Machine learning:\*\* LightGBM-based fraud prediction and threshold-based classification.
-
-4\. \*\*Experiment tracking:\*\* MLflow for tracking model development and experiments, including earlier CatBoost experiments.
-
-5\. \*\*Backend services:\*\* FastAPI prediction endpoints and supporting application workflows.
-
-6\. \*\*Streaming simulation:\*\* Simulated incoming transactions and prediction workflows.
-
-7\. \*\*Monitoring:\*\* Data quality, model performance and drift monitoring using Evidently.
-
-8\. \*\*Dashboard:\*\* A React-based interface for interacting with the platform and viewing operational insights.
+The platform integrates transaction data processing, machine learning, API-based predictions, simulated transaction streaming, model monitoring and an interactive dashboard.
 
 
 
-\## Technology Stack
+Rather than treating fraud detection as an isolated classification problem, FraudIntel explores the wider engineering lifecycle required to build and operate a fraud detection system.
 
 
 
-| Area | Technologies |
+\## 🎯 What FraudIntel Does
+
+
+
+| Capability | Description |
+
+|---|---|
+
+| 📥 Data ingestion | Transaction data acquisition and ingestion workflows |
+
+| 🔍 Data validation | Raw data validation, integrity checks and profiling |
+
+| ⚙️ Data engineering | PySpark, Spark SQL, DuckDB and Parquet processing |
+
+| 🤖 Fraud prediction | LightGBM-based fraud prediction and threshold classification |
+
+| 🔌 Prediction API | FastAPI backend for model inference |
+
+| 🌊 Streaming simulation | Simulated incoming transaction processing |
+
+| 📊 Model monitoring | Performance, data quality and drift monitoring |
+
+| 🧠 Explainability | SHAP-based model interpretation capabilities |
+
+| 🖥️ Dashboard | React-based fraud intelligence interface |
+
+
+
+\## 🏗️ Architecture
+
+
+
+```mermaid
+
+flowchart TD
+
+&#x20;   A\["Transaction Data"] --> B\["Data Ingestion"]
+
+&#x20;   B --> C\["Data Validation"]
+
+&#x20;   C --> D\["PySpark / Spark SQL / DuckDB"]
+
+&#x20;   D --> E\["Parquet Data Storage"]
+
+&#x20;   E --> F\["LightGBM Model"]
+
+&#x20;   F --> G\["FastAPI Prediction Service"]
+
+&#x20;   G --> H\["Streaming Simulation"]
+
+&#x20;   G --> I\["Monitoring"]
+
+&#x20;   H --> I
+
+&#x20;   I --> J\["React Dashboard"]
+
+&#x20;   K\["MLflow"] -.-> F
+
+&#x20;   L\["Evidently"] -.-> I
+
+```
+
+
+
+\## 🧰 Technology Stack
+
+
+
+| Category | Technologies |
 
 |---|---|
 
 | Programming | Python, JavaScript |
 
-| Data engineering | PySpark, Spark SQL, DuckDB |
+| Data Engineering | PySpark, Spark SQL, DuckDB |
 
-| Data processing | Pandas, PyArrow, Parquet |
+| Data Processing | Pandas, PyArrow, Parquet |
 
-| Machine learning | LightGBM, CatBoost, Scikit-learn |
+| Machine Learning | LightGBM, CatBoost, Scikit-learn |
 
-| Experiment tracking | MLflow |
+| Experiment Tracking | MLflow |
 
-| Model explainability | SHAP |
+| Explainability | SHAP |
 
-| Model monitoring | Evidently |
+| Monitoring | Evidently |
 
 | Backend | FastAPI, Uvicorn |
 
@@ -72,127 +146,67 @@ FraudIntel brings together several components of a modern fraud detection system
 
 
 
-\## Key Features
+\## ✨ Engineering Highlights
 
 
 
-\- Transaction data ingestion and validation.
+\### 1. Data Engineering
 
-\- Data exploration and profiling.
+\- Structured transaction data ingestion workflows.
 
-\- Data integrity and Parquet validation.
+\- Raw data validation and integrity verification.
 
-\- Distributed data processing workflows.
+\- Distributed processing using PySpark and Spark SQL.
 
-\- DuckDB and SQL-based data exploration.
+\- Analytical querying using DuckDB.
 
-\- LightGBM fraud prediction.
+\- Parquet-based data storage and validation.
+
+
+
+\### 2. Machine Learning
+
+\- LightGBM-based fraud prediction.
 
 \- Threshold-based classification.
 
-\- API-based prediction workflows.
+\- MLflow experiment tracking.
 
-\- Batch transaction assessment.
+\- Earlier CatBoost experiments retained in experiment history.
 
-\- Simulated transaction streaming.
-
-\- Model and data monitoring.
-
-\- Drift and performance monitoring.
-
-\- Prediction explainability.
-
-\- Interactive fraud monitoring dashboard.
-
-\- Automated tests covering core application components.
+\- SHAP-based explainability capabilities.
 
 
 
-\## Machine Learning and Experiment Tracking
+\*LightGBM is the current inference model. Historical experimental artifacts are not treated as active production models.\*
 
 
 
-LightGBM is the current model used in the fraud prediction and inference workflow.
+\### 3. Backend and Streaming
+
+\- FastAPI prediction services.
+
+\- Transaction batch assessment workflows.
+
+\- Simulated incoming transaction streams.
+
+\- Persistent monitoring and application workflows.
 
 
 
-The project also uses MLflow to track machine learning development and experiment history, including earlier CatBoost experiments.
+\### 4. Monitoring and Visualisation
+
+\- Model performance monitoring.
+
+\- Data quality and drift monitoring with Evidently.
+
+\- Interactive React dashboard.
+
+\- Recharts-based visualisation.
 
 
 
-Historical experimental artifacts are distinguished from the model currently used for inference.
-
-
-
-Model retraining and further optimisation are part of the ongoing development roadmap.
-
-
-
-\## Project Architecture
-
-
-
-```text
-
-Transaction Data
-
-&#x20;     |
-
-&#x20;     v
-
-Data Ingestion and Validation
-
-&#x20;     |
-
-&#x20;     v
-
-Data Processing
-
-(PySpark / Spark SQL / DuckDB)
-
-&#x20;     |
-
-&#x20;     v
-
-Parquet Data Storage
-
-&#x20;     |
-
-&#x20;     v
-
-Machine Learning
-
-(LightGBM)
-
-&#x20;     |
-
-&#x20;     v
-
-Prediction and Inference API
-
-(FastAPI)
-
-&#x20;     |
-
-&#x20;     v
-
-Monitoring and Streaming Simulation
-
-&#x20;     |
-
-&#x20;     v
-
-React Dashboard
-
-```
-
-
-
-MLflow supports experiment tracking, while Evidently supports data and model monitoring workflows.
-
-
-
-\## Project Structure
+\## 📁 Project Structure
 
 
 
@@ -202,17 +216,17 @@ FraudIntel/
 
 │
 
-├── app/                  # Backend application and API modules
+├── app/                  # FastAPI application and backend modules
 
 ├── src/                  # Core source code
 
 ├── config/               # Application configuration
 
-├── configs/              # Additional configuration files
+├── configs/              # Additional configurations
 
-├── data/                 # Local datasets and processed data
+├── data/                 # Local transaction datasets
 
-├── frontend/             # React and Vite dashboard
+├── frontend/             # React + Vite dashboard
 
 ├── models/               # Active model files
 
@@ -222,7 +236,7 @@ FraudIntel/
 
 ├── notebooks/            # Data exploration and experiments
 
-├── scripts/              # Ingestion and validation scripts
+├── scripts/              # Ingestion and validation workflows
 
 ├── reports/              # Generated reports
 
@@ -242,7 +256,7 @@ FraudIntel/
 
 
 
-\## Getting Started
+\## ⚡ Getting Started
 
 
 
@@ -250,11 +264,11 @@ FraudIntel/
 
 
 
-\- Python environment compatible with the project dependencies.
+\- Python environment compatible with project dependencies.
 
 \- Node.js and npm.
 
-\- Java for local PySpark execution.
+\- Java for PySpark.
 
 \- Git.
 
@@ -276,39 +290,15 @@ cd FraudIntel
 
 
 
-\### 2. Set up the Python environment
-
-
-
-```bash
-
-python -m venv .venv
-
-```
-
-
-
-Activate the environment.
-
-
-
-\*\*Windows PowerShell:\*\*
+\### 2. Install Python dependencies
 
 
 
 ```powershell
 
+python -m venv .venv
+
 .venv\\Scripts\\Activate.ps1
-
-```
-
-
-
-Install the dependencies:
-
-
-
-```bash
 
 pip install -r requirements.txt
 
@@ -320,7 +310,7 @@ pip install -r requirements.txt
 
 
 
-From the project root, run:
+From the project root:
 
 
 
@@ -332,27 +322,11 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 
 
-The backend will be available at:
+Backend: `http://127.0.0.1:8000`
 
 
 
-```text
-
-http://127.0.0.1:8000
-
-```
-
-
-
-FastAPI interactive documentation:
-
-
-
-```text
-
-http://127.0.0.1:8000/docs
-
-```
+API documentation: `http://127.0.0.1:8000/docs`
 
 
 
@@ -360,7 +334,7 @@ http://127.0.0.1:8000/docs
 
 
 
-Open a second terminal:
+Open another terminal:
 
 
 
@@ -376,23 +350,11 @@ npm run dev
 
 
 
-Vite will display the local dashboard URL, normally:
+Dashboard: `http://localhost:5173`
 
 
 
-```text
-
-http://localhost:5173
-
-```
-
-
-
-Keep both the backend and frontend terminals running during local development.
-
-
-
-\### 5. Run the tests
+\### 5. Run automated tests
 
 
 
@@ -408,7 +370,7 @@ pytest -v
 
 
 
-For test coverage:
+Coverage report:
 
 
 
@@ -420,19 +382,53 @@ pytest --cov=app --cov-report=term-missing
 
 
 
-\## Data Availability
+\## 📊 Experiment Tracking \& Monitoring
 
 
 
-Large datasets and generated data files are maintained locally rather than committed to the Git repository.
+\*\*MLflow\*\* supports experiment tracking and model development history, including earlier CatBoost experiments.
 
 
 
-To reproduce the data workflows, obtain the required source dataset separately and follow the ingestion, profiling and validation scripts in the `scripts/` directory.
+\*\*Evidently\*\* supports data quality and model monitoring workflows, helping assess changes in transaction data and model behaviour.
 
 
 
-\## Testing and Validation
+\## 🗺️ Development Roadmap
+
+
+
+| Component | Status |
+
+|---|---|
+
+| Data ingestion and validation | ✅ Implemented |
+
+| PySpark and SQL data processing | ✅ Implemented |
+
+| Parquet workflows | ✅ Implemented |
+
+| LightGBM inference | ✅ Implemented |
+
+| FastAPI backend | ✅ Implemented |
+
+| Streaming simulation | ✅ Implemented |
+
+| Evidently monitoring | ✅ Implemented |
+
+| React dashboard | ✅ Implemented |
+
+| MLflow experiment tracking | ✅ Implemented |
+
+| Model retraining and optimisation | 🔄 Upcoming |
+
+| RAG integration | 📌 Planned |
+
+| Render cloud deployment | 📌 Planned |
+
+
+
+\## 🧪 Testing
 
 
 
@@ -440,103 +436,39 @@ The project includes automated tests covering:
 
 
 
-\- API functionality.
+\- API functionality
 
-\- Data integrity.
+\- Data integrity
 
-\- Data pipeline execution.
+\- Data pipeline execution
 
-\- Data quality reporting.
+\- Data quality reporting
 
-\- Logging configuration.
+\- Logging configuration
 
-\- Monitoring persistence.
+\- Monitoring persistence
 
-\- Parquet integrity and values.
+\- Parquet integrity and values
 
-\- Raw data validation.
+\- Raw data validation
 
-\- Transaction stream simulation.
-
-
-
-\## Development Roadmap
+\- Transaction stream simulation
 
 
 
-FraudIntel is being developed incrementally.
+\## 📦 Data Availability
 
 
 
-\### Implemented
+Large transaction datasets and generated data files are maintained locally and are not committed to this repository.
 
 
 
-\- Data ingestion and validation workflows.
-
-\- PySpark, Spark SQL and DuckDB data processing.
-
-\- Parquet-based data workflows.
-
-\- LightGBM inference.
-
-\- FastAPI backend.
-
-\- Simulated transaction streaming.
-
-\- Evidently monitoring workflows.
-
-\- React dashboard.
-
-\- Automated tests.
-
-\- MLflow experiment tracking.
+Obtain the required source dataset separately and follow the ingestion and validation workflows in `scripts/`.
 
 
 
-\### Upcoming
-
-
-
-\- Model retraining and optimisation.
-
-\- Further model evaluation and champion model selection.
-
-\- Retrieval-Augmented Generation (RAG) integration.
-
-\- Cloud deployment using Render.
-
-\- Production deployment documentation.
-
-
-
-\## Project Goals
-
-
-
-FraudIntel is designed to demonstrate practical capabilities across the data engineering and machine learning lifecycle:
-
-
-
-\- Building reproducible data pipelines.
-
-\- Working with distributed data processing.
-
-\- Applying SQL to analytical workflows.
-
-\- Developing fraud detection models.
-
-\- Deploying machine learning through APIs.
-
-\- Simulating transaction processing workflows.
-
-\- Monitoring model and data quality.
-
-\- Building interactive applications around machine learning systems.
-
-
-
-\## Author
+\## 👨‍💻 Author
 
 
 
@@ -544,7 +476,19 @@ FraudIntel is designed to demonstrate practical capabilities across the data eng
 
 
 
-GitHub: \[Denford7](https://github.com/Denford7)
+\[!\[GitHub](https://img.shields.io/badge/GitHub-Denford7-181717?logo=github)](https://github.com/Denford7)
+
+
+
+\---
+
+
+
+<p align="center">
+
+&#x20; <strong>FraudIntel — Engineering intelligent fraud detection workflows.</strong>
+
+</p>
 
 
 
