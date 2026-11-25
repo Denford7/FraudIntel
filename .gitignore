@@ -47,3 +47,14 @@ mlruns/
 .coverage
 htmlcov/
 
+
+# Local/generated files
+data/
+reports/evidently/
+frontend/src/App_backup.jsxscripts/run_data_pipeline.py.bak
+
+# Local/generated files
+data/
+reports/evidently/
+frontend/src/App_backup.jsx
+scripts/run_data_pipeline.py.bak
