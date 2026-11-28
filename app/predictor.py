@@ -13,29 +13,41 @@ ARTIFACTS_DIR = BASE_DIR / "artifacts"
 
 mlflow.set_tracking_uri("sqlite:///C:/mlflow_new/mlflow.db")
 
-
 class FraudPredictor:
     def __init__(self):
-        config_path = ARTIFACTS_DIR / "inference_config.json"
-        with open(config_path, "r", encoding="utf-8") as file:
-            self.config = json.load(file)
+        self.reload()
 
+    def reload(self):
+        """
+        Reload the active model and inference configuration.
+        """
+
+        config_path = ARTIFACTS_DIR / "inference_config.json"
         schema_path = ARTIFACTS_DIR / "inference_schema.json"
+
+        with open(config_path, "r", encoding="utf-8") as file:
+            new_config = json.load(file)
+
         with open(schema_path, "r", encoding="utf-8") as file:
-            self.schema = json.load(file)
+            new_schema = json.load(file)
 
         model_uri = (
-            f"models:/{self.config['model_name']}/"
-            f"{self.config['model_version']}"
+            f"models:/{new_config['model_name']}/"
+            f"{new_config['model_version']}"
         )
 
-        self.model = mlflow.lightgbm.load_model(model_uri)
-        self.threshold = float(self.config["threshold"])
+        new_model = mlflow.lightgbm.load_model(model_uri)
+        new_threshold = float(new_config["threshold"])
+        new_explainer = shap.TreeExplainer(new_model)
 
-        # SHAP explainer for the native LightGBM model.
-        self.explainer = shap.TreeExplainer(self.model)
+        # Replace active objects only after successful loading.
+        self.config = new_config
+        self.schema = new_schema
+        self.model = new_model
+        self.threshold = new_threshold
+        self.explainer = new_explainer
 
-        print("FraudPredictor initialized successfully")
+        print("FraudPredictor loaded successfully")
         print(f"Model: {self.config['model_name']}")
         print(f"Version: {self.config['model_version']}")
         print(f"Features: {self.schema['feature_count']}")
@@ -44,7 +56,6 @@ class FraudPredictor:
             f"{len(self.schema['categorical_columns'])}"
         )
         print(f"Threshold: {self.threshold}")
-
     def prepare_features(self, data: pd.DataFrame) -> pd.DataFrame:
         """Validate and prepare transaction data for LightGBM inference."""
 

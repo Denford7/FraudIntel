@@ -6,6 +6,10 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any, Literal
 from datetime import datetime, timezone
+import re
+import subprocess
+import sys
+import threading
 
 import duckdb
 from fastapi import (
@@ -23,6 +27,25 @@ from fastapi.responses import (
     StreamingResponse,
     FileResponse,
 )
+# RETRAINING WORKFLOW STATE
+BASE_DIR = Path(__file__).resolve().parent.parent
+RETRAINING_DIR = BASE_DIR / "artifacts" / "retraining"
+
+retraining_lock = threading.Lock()
+
+retraining_status = {
+    "status": "idle",
+    "stage": None,
+    "progress": 0,
+    "candidate_version": None,
+    "message": "No retraining workflow running.",
+    "logs": [],
+    "started_at": None,
+    "completed_at": None,
+    "promoted": False,
+    "active_version": None,
+}
+
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from app.stream_simulator import simulation_controller
 from app.performance_monitor import PerformanceMonitor
@@ -53,6 +76,285 @@ app = FastAPI(
     description="Fraud detection inference API powered by LightGBM",
     version="1.0.0",
 )
+
+# RETRAINING WORKFLOW
+
+def update_retraining_status(**updates):
+    with retraining_lock:
+        retraining_status.update(updates)
+
+
+def append_retraining_log(message: str):
+    with retraining_lock:
+        retraining_status["logs"].append(message)
+
+
+def run_retraining_command(command: list[str], stage: str):
+    append_retraining_log(
+        f"[{stage}] Running: {' '.join(command)}"
+    )
+
+    result = subprocess.run(
+        command,
+        cwd=BASE_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    if result.stdout:
+        for line in result.stdout.splitlines():
+            append_retraining_log(f"[{stage}] {line}")
+
+    if result.stderr:
+        for line in result.stderr.splitlines():
+            append_retraining_log(f"[{stage} ERROR] {line}")
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"{stage} failed with exit code {result.returncode}."
+        )
+
+    return result.stdout
+
+
+def retraining_workflow():
+    try:
+        update_retraining_status(
+            status="running",
+            stage="retraining",
+            progress=10,
+            message="Training candidate model...",
+            started_at=datetime.now(timezone.utc).isoformat(),
+            completed_at=None,
+            promoted=False,
+        )
+
+        retrain_output = run_retraining_command(
+            [
+                sys.executable,
+                "scripts/retrain_model.py",
+            ],
+            "RETRAIN",
+        )
+
+        match = re.search(
+            r"Candidate version:\s*(\d+)",
+            retrain_output,
+        )
+
+        if not match:
+            raise RuntimeError(
+                "Could not determine candidate version from retraining output."
+            )
+
+        candidate_version = int(match.group(1))
+
+        candidate_report_path = (
+            RETRAINING_DIR
+            / f"candidate_version_{candidate_version}.json"
+        )
+
+        if not candidate_report_path.exists():
+            raise FileNotFoundError(candidate_report_path)
+
+        with open(candidate_report_path, "r", encoding="utf-8") as file:
+            candidate_report = json.load(file)
+
+        update_retraining_status(
+            stage="evaluation",
+            progress=45,
+            candidate_version=candidate_version,
+            message=f"Evaluating candidate version {candidate_version}...",
+        )
+
+        if not candidate_report["accepted"]:
+            update_retraining_status(
+                status="rejected",
+                stage="validation",
+                progress=100,
+                candidate_version=candidate_version,
+                message="Candidate failed the initial validation acceptance gate.",
+                completed_at=datetime.now(timezone.utc).isoformat(),
+                promoted=False,
+            )
+            return
+
+        run_retraining_command(
+            [
+                sys.executable,
+                "scripts/evaluate_candidate.py",
+                "--candidate-version",
+                str(candidate_version),
+            ],
+            "EVALUATE",
+        )
+
+        update_retraining_status(
+            stage="promotion",
+            progress=75,
+            message=f"Applying promotion gate to candidate {candidate_version}...",
+        )
+
+        run_retraining_command(
+            [
+                sys.executable,
+                "scripts/promote_candidate.py",
+                "--candidate-version",
+                str(candidate_version),
+            ],
+            "PROMOTE",
+        )
+
+        decision_path = (
+            RETRAINING_DIR
+            / f"decision_candidate_version_{candidate_version}.json"
+        )
+
+        if not decision_path.exists():
+            raise FileNotFoundError(decision_path)
+
+        with open(decision_path, "r", encoding="utf-8") as file:
+            decision = json.load(file)
+
+        if decision["promoted"]:
+            update_retraining_status(
+                stage="reload",
+                progress=90,
+                message="Promotion approved. Reloading active model...",
+            )
+
+            predictor.reload()
+
+            active_version = str(
+                predictor.config["model_version"]
+            )
+
+            if active_version != str(candidate_version):
+                raise RuntimeError(
+                    "Model reload completed but active model version "
+                    "does not match promoted candidate."
+                )
+
+            update_retraining_status(
+                status="completed",
+                stage="completed",
+                progress=100,
+                candidate_version=candidate_version,
+                message=f"Candidate {candidate_version} promoted and loaded.",
+                completed_at=datetime.now(timezone.utc).isoformat(),
+                promoted=True,
+                active_version=active_version,
+            )
+
+        else:
+            active_version = str(
+                predictor.config["model_version"]
+            )
+
+            update_retraining_status(
+                status="rejected",
+                stage="completed",
+                progress=100,
+                candidate_version=candidate_version,
+                message=(
+                    f"Candidate {candidate_version} was rejected. "
+                    f"Champion version {active_version} remains active."
+                ),
+                completed_at=datetime.now(timezone.utc).isoformat(),
+                promoted=False,
+                active_version=active_version,
+            )
+
+    except Exception as exc:
+        append_retraining_log(
+            f"[WORKFLOW ERROR] {type(exc).__name__}: {exc}"
+        )
+
+        update_retraining_status(
+            status="failed",
+            stage="error",
+            progress=100,
+            message=str(exc),
+            completed_at=datetime.now(timezone.utc).isoformat(),
+            promoted=False,
+        )
+
+    finally:
+        with retraining_lock:
+            retraining_status["_lock_available"] = True
+
+
+@app.get("/retraining/status")
+def get_retraining_status():
+    with retraining_lock:
+        status = dict(retraining_status)
+        status.pop("_lock_available", None)
+        return status
+
+
+@app.post("/retraining/start")
+def start_retraining():
+    with retraining_lock:
+        if retraining_status["status"] == "running":
+            raise HTTPException(
+                status_code=409,
+                detail="A retraining workflow is already running.",
+            )
+
+        retraining_status.update({
+            "status": "starting",
+            "stage": "queued",
+            "progress": 0,
+            "candidate_version": None,
+            "message": "Retraining workflow queued.",
+            "logs": [],
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": None,
+            "promoted": False,
+            "active_version": None,
+        })
+
+    thread = threading.Thread(
+        target=retraining_workflow,
+        daemon=True,
+    )
+    thread.start()
+
+    return {
+        "status": "started",
+        "message": "Retraining workflow started.",
+    }
+
+
+@app.post("/retraining/decline")
+def decline_retraining():
+    with retraining_lock:
+        if retraining_status["status"] == "running":
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot decline while retraining is already running.",
+            )
+
+        active_version = str(
+            predictor.config["model_version"]
+        )
+
+        retraining_status.update({
+            "status": "declined",
+            "stage": "decision",
+            "progress": 100,
+            "candidate_version": None,
+            "message": "Analyst declined retraining.",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "promoted": False,
+            "active_version": active_version,
+        })
+
+    return {
+        "status": "declined",
+        "message": "Retraining declined. Active champion remains unchanged.",
+    }
 
 # LIVE WEBSOCKET CONNECTION MANAGER
 class ConnectionManager:

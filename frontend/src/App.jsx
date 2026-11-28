@@ -140,6 +140,11 @@ function App() {
   const [conceptDrift, setConceptDrift] = useState(null);
   const [performanceHistory, setPerformanceHistory] = useState([]);
 
+    // RETRAINING WORKFLOW
+  const [retrainingStatus, setRetrainingStatus] = useState(null);
+  const [retrainingLoading, setRetrainingLoading] = useState(false);
+  const [retrainingError, setRetrainingError] = useState("");
+  const [showRetrainingModal, setShowRetrainingModal] = useState(false);
   // LIVE OPERATIONS
   const [liveEvents, setLiveEvents] = useState([]);
   const [liveConnected, setLiveConnected] = useState(false);
@@ -471,6 +476,77 @@ try {
     setLoading(false);
   }
 }, []);
+
+   // RETRAINING WORKFLOW
+  const fetchRetrainingStatus = useCallback(async () => {
+    try {
+      const response = await fetch("/api/retraining/status");
+
+      if (!response.ok) {
+        throw new Error("Unable to retrieve retraining status.");
+      }
+
+      const data = await response.json();
+      setRetrainingStatus(data);
+      setRetrainingError("");
+    } catch (err) {
+      setRetrainingError(err.message);
+    }
+  }, []);
+
+  const startRetraining = async () => {
+    setRetrainingLoading(true);
+    setRetrainingError("");
+
+    try {
+      const response = await fetch("/api/retraining/start", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Unable to start retraining.");
+      }
+
+      await fetchRetrainingStatus();
+    } catch (err) {
+      setRetrainingError(err.message);
+    } finally {
+      setRetrainingLoading(false);
+    }
+  };
+
+  const declineRetraining = async () => {
+    setRetrainingLoading(true);
+    setRetrainingError("");
+
+    try {
+      const response = await fetch("/api/retraining/decline", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Unable to record decision.");
+      }
+
+      await fetchRetrainingStatus();
+    } catch (err) {
+      setRetrainingError(err.message);
+    } finally {
+      setRetrainingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRetrainingStatus();
+
+    const interval = setInterval(fetchRetrainingStatus, 3000);
+
+    return () => clearInterval(interval);
+  }, [fetchRetrainingStatus]);
   useEffect(() => {
     fetchDashboardData();
 
@@ -1970,15 +2046,182 @@ useEffect(() => {
             </div>
           </div>
         </>
-      ) : (
+       ) : (
         <div className="chart-empty">
           {conceptDrift?.message || "Waiting for sufficient labelled transactions."}
         </div>
       )}
-    </section>
 
-    {/* HISTORICAL PERFORMANCE */}
-    <section className="card monitoring-section">
+   {/* TRAINING STATUS BUTTON */}
+<div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: "18px",
+    marginBottom: "8px",
+  }}
+>
+  <button
+    className="training-status-button"
+    onClick={() => setShowRetrainingModal(true)}
+  >
+    <span className="training-status-dot"></span>
+    View Training Status
+  </button>
+</div>
+
+</section>
+
+{/* RETRAINING STATUS MODAL */}
+{showRetrainingModal && (
+  <div
+    className="retraining-modal-overlay"
+    onClick={() => setShowRetrainingModal(false)}
+  >
+    <div
+      className="retraining-modal"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="retraining-modal-header">
+        <div>
+          <h3>Model Retraining & Promotion</h3>
+          <p>
+            Analyst-controlled candidate training and independent evaluation
+          </p>
+        </div>
+
+        <button
+          className="modal-close-button"
+          onClick={() => setShowRetrainingModal(false)}
+          aria-label="Close training status"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="monitoring-details">
+        <div>
+          <span>Status</span>
+          <strong>
+            {(retrainingStatus?.status || "idle").toUpperCase()}
+          </strong>
+        </div>
+
+        <div>
+          <span>Active champion</span>
+          <strong>
+            Version {retrainingStatus?.active_version ?? "1"}
+          </strong>
+        </div>
+
+        <div>
+          <span>Candidate version</span>
+          <strong>
+            {retrainingStatus?.candidate_version ?? "—"}
+          </strong>
+        </div>
+
+        <div>
+          <span>Workflow stage</span>
+          <strong>
+            {retrainingStatus?.stage || "Idle"}
+          </strong>
+        </div>
+
+        <div>
+          <span>Progress</span>
+          <strong>
+            {retrainingStatus?.progress ?? 0}%
+          </strong>
+        </div>
+      </div>
+
+      {(retrainingStatus?.status === "running" ||
+        retrainingStatus?.status === "starting") && (
+        <div
+          style={{
+            width: "100%",
+            height: "9px",
+            background: "var(--border-color, #334155)",
+            borderRadius: "8px",
+            overflow: "hidden",
+            margin: "18px 0",
+          }}
+        >
+          <div
+            style={{
+              width: `${retrainingStatus.progress || 0}%`,
+              height: "100%",
+              background: "#38bdf8",
+              transition: "width 0.4s ease",
+            }}
+          />
+        </div>
+      )}
+
+      <div className="retraining-message">
+        {retrainingStatus?.message ||
+          "No retraining workflow has been started."}
+      </div>
+
+      {retrainingStatus?.status === "rejected" && (
+        <div className="retraining-result rejected">
+          Candidate rejected. The existing champion remains active.
+        </div>
+      )}
+
+      {retrainingStatus?.promoted && (
+        <div className="retraining-result promoted">
+          Candidate successfully promoted and loaded into the API.
+        </div>
+      )}
+
+      {retrainingError && (
+        <div className="retraining-error">
+          {retrainingError}
+        </div>
+      )}
+
+      <div className="retraining-actions">
+        <button
+          className="primary-button"
+          onClick={startRetraining}
+          disabled={
+            retrainingLoading ||
+            retrainingStatus?.status === "running" ||
+            retrainingStatus?.status === "starting"
+          }
+        >
+          {retrainingLoading ? "Processing..." : "Retrain Model"}
+        </button>
+
+        {retrainingStatus?.status === "idle" && (
+          <button
+            className="primary-button"
+            onClick={declineRetraining}
+            disabled={retrainingLoading}
+          >
+            Decline Retraining
+          </button>
+        )}
+      </div>
+
+      {retrainingStatus?.logs?.length > 0 && (
+        <div style={{ marginTop: "22px" }}>
+          <h4>Workflow Logs</h4>
+
+          <div className="retraining-logs">
+            {retrainingStatus.logs.slice(-12).map((log, index) => (
+              <div key={index}>{log}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+<section className="card monitoring-section">
       <div className="card-header">
         <div>
           <h3>Historical Performance Trends</h3>
